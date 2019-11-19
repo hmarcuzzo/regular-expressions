@@ -15,8 +15,6 @@ class FiniteAutomaton(object):
 
 def printfaData(fa_aux, i):
     print()
-    print("Expressão regular é: " + str(ER))
-    print()
     print(f'Tipo da máquina {i+1} : {fa_aux.machine}')
     print(f'Alfabeto da máquina {i+1} : {fa_aux.input_alphabet}')
     print(f'Lambda da máquina {i+1} : {fa_aux.lambda_}')
@@ -36,6 +34,8 @@ fp.close()
 for line in lines_cmd:
     ER = (line.rstrip())
 
+print()
+print("Expressão regular é: " + str(ER))
 #######################################################
 """ Criado uma lista com a estrutura de um automâto finito """
 fa =[ ]
@@ -62,22 +62,20 @@ for i in range(25):
         break
     letter += 1
 
+
 #######################################################
 """ Separo a Expressão Regular em uniões """
 ER_AUX = ER.split('+')
 AUX = []
 
-# print(ER_AUX)
-
-
-#######################################################
-""" É checado se nas separações de união existem algum parenteses, se houver é marcado o começo e o fim, e é setado
-        a flag dizendo que existe """
-
 begin = []
 end = []
 flag = 0
 
+# print(ER_AUX)
+
+""" É checado se nas separações de união existem algum parenteses, se houver é marcado o começo e o fim, e é setado
+        a flag dizendo que existe """
 for i in range(len(ER_AUX)):
     for j in range(len(ER_AUX[i])):
         if ER_AUX[i][j] == '(':
@@ -205,23 +203,24 @@ for i in range(len(ER_AUX)):
 auxKleen = ''
 finishKleen = ''
 AUX.clear()
+
+
 for i in range(len(ER)):
     if ER[i] == '*':
-#         if ER[i - 1] == ')':
-#             j = i
-#             while j > 0:
-#                 auxKleen = str(auxKleen) + str(ER[j])
+        if ER[i - 1] == ')':
+            j = i
+            while j >= 0:
+                auxKleen = str(auxKleen) + str(ER[j])
 
-#                 if ER[j] == '(':
-#                     break
-
-#                 j -= 1
-#             auxKleen = list(reversed(auxKleen))
-#             for h in range(len(auxKleen)):
-#                 finishKleen = str(finishKleen) + str(auxKleen[h])   
-#             AUX.append(finishKleen)
-        # else:
-        AUX.append(ER[i - 1] + ER[i])
+                if ER[j] == '(':
+                    break
+                j -= 1
+            auxKleen = list(reversed(auxKleen))
+            for h in range(len(auxKleen)):
+                finishKleen = str(finishKleen) + str(auxKleen[h])   
+            AUX.append(finishKleen)
+        else:
+            AUX.append(ER[i - 1] + ER[i])
 
 # print("AUX: " + str(AUX))
 
@@ -243,7 +242,12 @@ for i in range(len(AUX)):
                     fa[0].transitions.append("q" + str(j) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
                     states += 1
 
-                    fa[0].transitions.append("q" + str(states) + " " + str(AUX[i][0]) + " q" + str(states + 1))
+                    finishKleen = ''
+                    for h in range(len(AUX[i]) - 1):
+                        finishKleen = str(finishKleen) + AUX[i][h]
+                    AUX[i] = finishKleen
+
+                    fa[0].transitions.append("q" + str(states) + " " + str(AUX[i]) + " q" + str(states + 1))
                     states += 1
 
                     fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(h))
@@ -251,13 +255,30 @@ for i in range(len(AUX)):
         k += 1
 
 #######################################################
-""" Removendo os parenteses para repetir os ciclos de União Concatenação e Fecho Kleene """
+""" Removendo um nível dos parenteses para repetir os ciclos de União Concatenação e Fecho Kleene """
 
-for i in range(len(ER_AUX)):
-    ER_AUX[i] = ER_AUX[i].replace('(', '')
-    ER_AUX[i] = ER_AUX[i].replace(')', '')
+# print("ER_AUX: " + str(ER_AUX))
+print("ER: " + str(ER))
+ER_AUX = []
 
-# print("ER_AUX: " + str(ER_AUX))   
+parenteses = 0
+
+for i in range(len(ER)):
+    if ER[i] == ')':
+        parenteses -= 1
+
+        if parenteses == 0:
+            ER_AUX.append(AUX)
+            
+    if parenteses > 0:
+        AUX = AUX + ER[i]
+    if ER[i] == '(':
+        if parenteses == 0:
+            AUX = ''
+        parenteses += 1
+        
+print("ER_AUX: " + str(ER_AUX)) 
+
 
 
 #######################################################
@@ -266,8 +287,8 @@ for i in range(len(ER_AUX)):
 for i in range(states + 1):
     fa[0].states.append("q" + str(i))
 
-fa[0].initial_state.append("q" + str(first))
-fa[0].final_states.append("q" + str(last))
+fa[0].initial_state.append("q0")
+fa[0].final_states.append("q1")
 
 #######################################################
 printfaData(fa[0], 0)
