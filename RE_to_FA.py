@@ -302,8 +302,9 @@ re_to_fa.close()
 #######################################################
 """ Verifica se o automato aceita a palavra colocada """
 
-inputTest = ""
-for i in range(len(sys.argv[3:])):
-    inputTest = inputTest + sys.argv[3:][i]
+if len(sys.argv[3:]) > 0:
+    inputTest = ""
+    for i in range(len(sys.argv[3:])):
+        inputTest = inputTest + sys.argv[3:][i]
 
-return_code = subprocess.call('python3 ./fla/main.py ' + sys.argv[2] + " " + inputTest, shell=True)
+    return_code = subprocess.call('python3 ./fla/main.py ' + sys.argv[2] + " " + inputTest, shell=True)
