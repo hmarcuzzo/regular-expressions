@@ -3,7 +3,7 @@
 *                                                                    *
 * DESCRIÇÂO :                                                        *
 *                                                                    *
-*        Este trabalho conciste em transformar uma expressão regular *
+*        Este trabalho consiste em transformar uma expressão regular *
 *           em um automato finito, para isso todas as operações de   *
 *           União, Concatenação e Fecho de Kleene são feitas, nesta  *
 *           ordem, nos operadores que se encontram fora de           *

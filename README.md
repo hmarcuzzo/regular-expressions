@@ -2,7 +2,7 @@
 
 # Conceitos da implementação
 
-Este trabalho conciste em transformar uma expressão regular em um automato finito, para isso todas as operações de União, Concatenação e Fecho de Kleene são feitas, nesta ordem, nos operadores que se encontram fora de parenteses.
+Este trabalho consiste em transformar uma expressão regular em um automato finito, para isso todas as operações de União, Concatenação e Fecho de Kleene são feitas, nesta ordem, nos operadores que se encontram fora de parenteses.
 
 Ao final deste ciclo, tenta-se retirar um ciclo de parenteses, se ocorrer com sucesso, ou se seja haviam parenteses para ser retirado, o ciclo de União, Concatenação e Fecho de Kleene se repetem até que não existam mais parenteses para serem retirados.
 
