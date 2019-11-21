@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ndfa.instance import Instance
+from fla.ndfa.instance import Instance
+
 import copy
 import logging
 
@@ -14,22 +15,28 @@ class NonDeterministicFiniteAutomaton:
         self.current_configurations = [] 
         self.closure = {}
         for state in self.states:
-            self.get_closure(state)   
+            self.get_closure(state)
 
     def restart(self):
         self.current_configuration = []
         
     def get_closure(self, state):
         if state not in self.closure:
-            current_closure = set()
+            changes = 0
             new_closure = set()
             new_closure.add(state)
-            while new_closure != current_closure:
-                current_closure.update(new_closure)
-                for transition in self.transitions:
-                    if transition.match_state(state) and transition.is_empty_transition():
-                        new_closure.add(transition.new_state)
+            changes += 1
+            while changes > 0:
+                changes = 0
+                closure_update = set()
+                for closure_state in new_closure:
+                    for transition in self.transitions:
+                        if transition.match_state(closure_state) and transition.is_empty_transition() and transition.new_state not in new_closure:
+                            closure_update.add(transition.new_state)
+                            changes += 1
+                new_closure.update(closure_update)
             self.closure[state] = new_closure
+        logging.debug("Closure for state " + state + ": " + str(self.closure[state]))
         return self.closure[state]
     
     def verify_status(self, configuration):
@@ -50,22 +57,42 @@ class NonDeterministicFiniteAutomaton:
     def get_initial_configurations(self, word):
         configurations = []
         for state in self.initial_states:
-            configuration = Instance(self, state, word)
+            for closure_state in self.get_closure(state):
+                configuration = Instance(self, closure_state, word)
+                configurations.append(configuration)
+        return configurations
+
+    def get_configurations_for_closure(self, configuration):
+        configurations = []
+        for state in self.get_closure(configuration.current_state):
+            configuration = Instance(self, state, configuration.current_word)
             configurations.append(configuration)
         return configurations
-    
+
     def load_configurations(self, configurations):
         self.current_configurations = configurations
+        for configuration in configurations:
+            logging.debug("__initial__ -> " + str(configuration))
 
     def step_forward(self):
         configurations_current_step = copy.copy(self.current_configurations)
         self.current_configurations = []
         for configuration in configurations_current_step:
             for transition in configuration.get_valid_transitions():
-                new_configuration = configuration.apply_transition(transition)
-                if new_configuration is not None:
-                    self.current_configurations.append(new_configuration)
-                logging.debug(str(configuration) + " -> " + str(new_configuration))
+                if transition.is_empty_transition():
+                    logging.debug("Ignoring transition because of closure: " + str(transition))
+                else:
+                    new_configuration = configuration.apply_transition(transition)
+                    if new_configuration is not None:
+                        self.current_configurations.append(new_configuration)
+                        logging.debug(str(configuration) + " -> " + str(new_configuration))
+                        closure_configurations = self.get_configurations_for_closure(new_configuration)
+                        if len(closure_configurations) > 0:
+                            # self.current_configurations.extend(closure_configurations)
+                            for closure_configuration in closure_configurations:
+                                self.current_configurations.append(closure_configuration)
+                                logging.debug(str(configuration) + " -> " + str(new_configuration))
+
 
     def run(self):
         pertinence_decision = self.get_decision()
@@ -78,6 +105,9 @@ class NonDeterministicFiniteAutomaton:
                 self.verify_status(configuration)
                 if configuration.acceptance_status != None:
                     halted_configurations.append(configuration)
+            if len(halted_configurations) > 0:
+                if self.get_decision():
+                    break
         self.current_configurations = halted_configurations
         return self.get_decision()
         

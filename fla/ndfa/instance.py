@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from ndfa.transition import Transition
+
+from fla.ndfa.transition import Transition
 
 class Instance:
     def __init__(self, automaton, state, word, previous_configuration = None):

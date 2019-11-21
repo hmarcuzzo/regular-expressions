@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from pda.instance import Instance
+from fla.pda.instance import Instance
+
 import copy
 import logging
 

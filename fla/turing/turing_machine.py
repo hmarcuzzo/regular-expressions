@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from turing.instance import Instance
+from fla.turing.instance import Instance
 
 import copy
 import logging

@@ -3,7 +3,7 @@
 
 import copy
 
-from turing.transition import Transition
+from fla.turing.transition import Transition
 
 class Instance:
     def __init__(self, automaton, state, tapes = [], previous_configuration = None):

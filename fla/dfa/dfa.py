@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from dfa.instance import Instance
+from fla.dfa.instance import Instance
+
 import logging
 
 class DeterministicFiniteAutomaton:

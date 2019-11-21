@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from pda.transition import Transition
+
+from fla.pda.transition import Transition
 
 class Instance:
     def __init__(self, automaton, state, word, stack, previous_configuration = None):

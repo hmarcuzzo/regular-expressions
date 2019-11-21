@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from dfa.dfa import DeterministicFiniteAutomaton
-from dfa.transition import Transition as DFATransition 
+from fla.dfa.dfa import DeterministicFiniteAutomaton
+from fla.dfa.transition import Transition as DFATransition 
 
-from ndfa.ndfa import NonDeterministicFiniteAutomaton
-from ndfa.transition import Transition as NDFATransition 
+from fla.ndfa.ndfa import NonDeterministicFiniteAutomaton
+from fla.ndfa.transition import Transition as NDFATransition 
 
-from pda.pda import PushDownAutomaton
-from pda.transition import Transition as PDATransition 
+from fla.pda.pda import PushDownAutomaton
+from fla.pda.transition import Transition as PDATransition 
 
-from turing.turing_machine import TuringMachine
-from turing.tape import Tape
-from turing.transition import Transition as TuringTransition
+from fla.turing.turing_machine import TuringMachine
+from fla.turing.tape import Tape
+from fla.turing.transition import Transition as TuringTransition
 
 import sys
 import logging

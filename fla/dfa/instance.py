@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from dfa.transition import Transition
+from fla.dfa.transition import Transition
 
 class Instance:
     def __init__(self, automaton, state, word, previous_configuration = None):
