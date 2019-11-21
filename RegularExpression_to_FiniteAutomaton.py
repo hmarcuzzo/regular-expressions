@@ -3,10 +3,10 @@ import subprocess
 
 ############### Declaração de Variaveis ###############
 
-states = 1
+states = 1      # variavel que controlara quantos estados tem o autômato finito
 
-ER = ''         # variavél que contera a expressão regular
-fa =[]
+ER = ''         # variavel que contera a expressão regular
+fa =[]          # variavel que contera toda a estrutura do autômato finito
 
 first = 0
 last = 1
@@ -96,9 +96,59 @@ def init():
     fa[0].final_states.append("q1")
 
 #######################################################
+
+def organizaParenteses(tipo):
+    global begin
+    global end
+    global ER_AUX
+    
+    """ É checado se nas separações de união existem algum parenteses, se houver é marcado o começo e o fim, e é setado
+                a flag dizendo que existe """
+    parenteses = 0                      # caso haja mais um nível de parenteses esse contador irá controlar para que nenhuma união sejá perdido
+    flag = 0                            # flag que dirá se há parenteses na separação
+    begin.clear()                       # irá marcar o inicio do parenteses, sendo em listas para o caso de haver parenteses em posições separadas
+    end.clear()                         # irá marcar o fim do parentes, sendo em listas para o caso de haver parenteses em posições separadas
+        
+    """ procura os parenteses para fazer as uniões """
+    for i in range(len(ER_AUX)):
+        for j in range(len(ER_AUX[i])):
+            if ER_AUX[i][j] == ')':
+                parenteses -= 1
+
+                if parenteses == 0:
+                    end.append(i)
+            if ER_AUX[i][j] == '(':
+                if parenteses == 0:
+                    begin.append(i)
+                parenteses += 1
+                flag = 1
+
+    print(begin)
+    print(end)
+    """ Se existe parenteses nas separações, é feito a junção novamente com o simblo da união na posição de inicio das separações """
+    if flag == 1:
+        for i in range(len(begin)):
+            for j in range(begin[i], end[i]):
+                if j != end[i]:
+                    ER_AUX[begin[i]] = str(ER_AUX[begin[i]]) + str(tipo) + str(ER_AUX[j + 1])
+
+    """ Deleta-se as partes após o inicio das separações, pois já estão na posição onde occoreu as junções """
+    for i in range(len(begin)):
+        j = begin[i]
+        while j < end[i]:
+            end[i] = end[i] - 1
+            if i < (len(begin) - 1):
+                begin[i + 1] = begin[i + 1] - 1
+                end[i + 1] = end[i + 1] - 1
+            
+            del(ER_AUX[j + 1])
+            j -= 1
+            j += 1
+
 """ Separo a Expressão Regular em uniões """
 def Union(ER):
     global states
+    global fa
     global first
     global last
     global begin
@@ -115,7 +165,8 @@ def Union(ER):
                 for j in range(states):
                     for h in range(states + 1):
                         # procura uma transação que tenha ER na transação para deleta-lo
-                        if fa[0].transitions[k].find("q" + str(j) + " " + str(ER) + " q" + str(h)) == 0:           
+                        if fa[0].transitions[k].find("q" + str(j) + " " + str(ER) + " q" + str(h)) == 0:      
+                            print(fa[0].transitions[k])     
                             del(fa[0].transitions[k])
                             control -= 1
                             k -= 1
@@ -125,49 +176,9 @@ def Union(ER):
                 k += 1
 
         # onde houver o símbolo '+' é separado, gerando vários itens na listas se houver
-        ER_AUX = ER.split('+')              
-
-        """ É checado se nas separações de união existem algum parenteses, se houver é marcado o começo e o fim, e é setado
-                a flag dizendo que existe """
-        parenteses = 0                      # caso haja mais um nível de parenteses esse contador irá controlar para que nenhuma união sejá perdido
-        flag = 0                            # flag que dirá se há parenteses na separação
-        begin.clear()                       # irá marcar o inicio do parenteses, sendo em listas para o caso de haver parenteses em posições separadas
-        end.clear()                         # irá marcar o fim do parentes, sendo em listas para o caso de haver parenteses em posições separadas
+        ER_AUX = ER.split('+')             
         
-        """ procura os parenteses para fazer as uniões """
-        for i in range(len(ER_AUX)):
-            for j in range(len(ER_AUX[i])):
-                if ER_AUX[i][j] == ')':
-                    parenteses -= 1
-
-                    if parenteses == 0:
-                        end.append(i)
-                if ER_AUX[i][j] == '(':
-                    if parenteses == 0:
-                        begin.append(i)
-                    parenteses += 1
-                    flag = 1
-
-        """ Se existe parenteses nas separações, é feito a junção novamente com o simblo da união na posição de inicio das separações """
-        if flag == 1:
-            for i in range(len(begin)):
-                for j in range(begin[i], end[i]):
-                    if j != end[i]:
-                        ER_AUX[begin[i]] = str(ER_AUX[begin[i]]) + "+" + str(ER_AUX[j + 1])
-
-
-            """ Deleta-se as partes após o inicio das separações, pois já estão na posição onde occoreu as junções """
-            for i in range(len(begin)):
-                j = begin[i]
-                while j < end[i]:
-                    end[i] = end[i] - 1
-                    if i < (len(begin) - 1):
-                        begin[i + 1] = begin[i + 1] - 1
-                        end[i + 1] = end[i + 1] - 1
-                    
-                    del(ER_AUX[j + 1])
-                    j -= 1
-                    j += 1
+        organizaParenteses('+')
 
         """ Criando as primeiras transações do que foi separado com a união """
         begin.clear()       # marca o inicio da nova transação
