@@ -3,22 +3,20 @@ import subprocess
 
 ############### Declaração de Variaveis ###############
 
-states = 1      # variavel que controlara quantos estados tem o autômato finito
+endCondition = 0        # variavel que controlara se o programa terminou ou não
+states = 1              # variavel que controlara quantos estados tem o autômato finito
 
-ER = ''         # variavel que contera a expressão regular
-fa =[]          # variavel que contera toda a estrutura do autômato finito
+ER = ''                 # variavel que ira conter a expressão regular
+fa =[]                  # variavel que ira conter toda a estrutura do autômato finito
 
-first = 0
-last = 1
+first = 0               # variavel que tera sempre o começo de uma operação
+last = 1                # variavel que contera o final de uma operação
 
-begin = []
+begin = []              
 end = []
 
-ER_AUX = []
-AUX = []
-
-EXECUTIONS = 0
-lenER_AUX = 0
+ER_AUX = []             # variavel auxiliar da Expressão Regular
+AUX = []                # variavel auxiliar da auxiliar da Expressão Regular
 
 #######################################################
 """ Classe com todas as linhas de um automato finito. """
@@ -96,11 +94,10 @@ def init():
     fa[0].final_states.append("q1")
 
 #######################################################
-
-def organizaParenteses(tipo):
+""" Junta novamente os parenteses que foram separados pelo o split de algum tipo """
+def organizaParenteses(tipo, ER_AUX):
     global begin
     global end
-    global ER_AUX
     
     """ É checado se nas separações de união existem algum parenteses, se houver é marcado o começo e o fim, e é setado
                 a flag dizendo que existe """
@@ -123,8 +120,6 @@ def organizaParenteses(tipo):
                 parenteses += 1
                 flag = 1
 
-    print(begin)
-    print(end)
     """ Se existe parenteses nas separações, é feito a junção novamente com o simblo da união na posição de inicio das separações """
     if flag == 1:
         for i in range(len(begin)):
@@ -145,6 +140,7 @@ def organizaParenteses(tipo):
             j -= 1
             j += 1
 
+#######################################################
 """ Separo a Expressão Regular em uniões """
 def Union(ER):
     # declarando as variaveis globais
@@ -152,8 +148,6 @@ def Union(ER):
     global fa
     global first
     global last
-    global begin
-    global end
     global ER_AUX
 
 
@@ -168,7 +162,7 @@ def Union(ER):
                     for h in range(states + 1):
                         # procura uma transação que tenha ER na transação para deleta-lo
                         if fa[0].transitions[k].find("q" + str(j) + " " + str(ER) + " q" + str(h)) == 0:      
-                            print(fa[0].transitions[k])     
+                            # print(fa[0].transitions[k])     
                             del(fa[0].transitions[k])
                             control -= 1
                             k -= 1
@@ -180,32 +174,28 @@ def Union(ER):
         # onde houver o símbolo '+' é separado, gerando vários itens na listas se houver
         ER_AUX = ER.split('+')             
         
-        organizaParenteses('+')
+        organizaParenteses('+', ER_AUX)
 
         """ Criando as transações do que foi separado com a união """
-        begin.clear()       # marca o inicio da nova transação
-        end.clear()         # marca o fim da nova transação
-
         for i in range(len(ER_AUX)):
             fa[0].transitions.append("q" + str(first) + " " + str(fa[0].lambda_[0]) + " " + "q" + str((states + 1)))
-            begin.append(states + 1)
             states += 1
             
-            fa[0].transitions.append("q" + str(begin[i]) + " " + str(ER_AUX[i]) + " " + "q" + str((states + 1)))
-            end.append(states + 1)
+            fa[0].transitions.append("q" + str(states) + " " + str(ER_AUX[i]) + " " + "q" + str((states + 1)))
             states += 1
 
-            fa[0].transitions.append("q" + str(end[i]) + " " + str(fa[0].lambda_[0]) + " " + "q" + str((last)))
+            fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " " + "q" + str((last)))
+
 #######################################################
 """ Criando as transações para as Concatenações """
 def Concatenation():
+    # declarando as variaveis globais
     global states
-    global begin
-    global end
+    global first
+    global last
     global ER_AUX
+    global AUX
 
-    begin2 = []
-    end2 = []
 
     for i in range(len(ER_AUX)):
         flag = 0
@@ -214,128 +204,179 @@ def Concatenation():
             AUX = ER_AUX[i]
             AUX = AUX.split('.')
 
-            """ É checado se nas separações de concatenação existem algum parenteses, se houver é marcado o começo e o fim, 
-                    e é setado a flag dizendo que existe """
-            parenteses = 0
+            organizaParenteses('.', AUX)
 
-            for i in range(len(AUX)):
-                for j in range(len(AUX[i])):
-                    if AUX[i][j] == ')':
-                        parenteses -= 1
-
-                        if parenteses == 0:
-                            end2.append(i)
-                    if AUX[i][j] == '(':
-                        if parenteses == 0:
-                            begin2.append(i)
-                        parenteses += 1
-                        flag = 1
-
-            """ Se existe parenteses nas separações, é feito a junção novamente com a concatenação """
-            if flag == 1:
-                for i in range(len(begin2)):
-                    for j in range(begin2[i], end2[i]):
-                        if j != end2[i]:
-                            AUX[begin2[i]] = str(AUX[begin2[i]]) + "." + str(AUX[j + 1])
-
-                for i in range(len(begin2)):
-                    j = begin2[i]
-                    while j < end2[i]:
-                        end2[i] = end2[i] - 1
-                        if i < (len(begin2) - 1):
-                            begin2[i + 1] = begin2[i + 1] - 1
-                            end2[i + 1] = end2[i + 1] - 1
-                        
-                        del(AUX[j + 1])
-                        j -= 1
-                        j += 1
-
-            print("AUX Contatenation: " + str(AUX))
 
             k = 0
             control = len(fa[0].transitions)
             while k < control:
-                if fa[0].transitions[k].find("q" + str(begin[i]) + " " + str(ER_AUX[i]) + " q" + str(end[i])) == 0:
-                    del(fa[0].transitions[k])
-                    control -= 1
-                    k -= 1
 
-                    for h in range(len(AUX)):
-                        fa[0].transitions.append("q" + str(begin[i]) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
-                        states += 1
+                for j in range(states):
+                    for l in range(states + 1):
+                        if fa[0].transitions[k].find("q" + str(j) + " " + str(ER_AUX[i]) + " q" + str(l)) == 0:
+                            del(fa[0].transitions[k])
+                            control -= 1
+                            k -= 1
 
+                            first = j
+                            last = l
 
-                        fa[0].transitions.append("q" + str(states) + " " + str(AUX[h]) + " q" + str(states + 1))
-                        states += 1
+                            for h in range(len(AUX)):
 
-                        if h == len(AUX) - 1:
-                            fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(end[i]))
-                        else:
-                            fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
-                            states += 1
-                            begin[i] = states
+                                fa[0].transitions.append("q" + str(first) + " " + str(AUX[h]) + " q" + str(states + 1))
+                                states += 1
+
+                                if h == len(AUX) - 1:
+                                    fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(last))
+                                else:
+                                    fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
+                                    states += 1
+                                    first = states
                 k += 1
 
+#######################################################
+""" Criando as transições para os Fecho Kleene """
+def FechoKleene():
+    global states
+    global AUX
+    global AUX_Recover
+
+    parenteses = 0
+    auxKleen = ''
+    finishKleen = ''
+    AUX = []
+
+    for i in range(len(ER_AUX)):
+        for j in range(len(ER_AUX[i])):
+            if ER_AUX[i][j] == '(':
+                parenteses += 1
+            if ER_AUX[i][j] == ')':
+                parenteses -= 1
+            if ER_AUX[i][j] == '*' and parenteses == 0:
+                if ER_AUX[i][j - 1] == ')':
+                    k = j
+                    while k >= 0:
+                        if ER_AUX[i][k] == ')':
+                            parenteses += 1
+
+                        auxKleen = str(auxKleen) + str(ER_AUX[i][k])
+
+                        if ER_AUX[i][k] == '(':
+                            parenteses -= 1
+                            if parenteses == 0:
+                                break
+                        k -= 1
+
+                    auxKleen = list(reversed(auxKleen))
+                    for h in range(len(auxKleen)):
+                        finishKleen = str(finishKleen) + str(auxKleen[h])   
+                    AUX.append(finishKleen)
+                else:
+                    AUX.append(ER_AUX[i][j - 1] + ER_AUX[i][j])
+
+    # print("Fecho AUX: " + str(AUX))
+
+    for i in range(len(AUX)):
+        k = 0
+        control = len(fa[0].transitions)
+        while k < control:
+            for j in range(states):
+                for h in range(states + 1):
+                    if fa[0].transitions[k].find("q" + str(j) + " " + str(AUX[i]) + " q" + str(h)) == 0 and h != 1:
+                        del(fa[0].transitions[k])
+                        control -= 1
+                        k -= 1
+
+                        fa[0].transitions.append("q" + str(j) + " " + str(fa[0].lambda_[0]) + " q" + str(h))
+                        fa[0].transitions.append("q" + str(h) + " " + str(fa[0].lambda_[0]) + " q" + str(j))
+
+                        fa[0].transitions.append("q" + str(j) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
+                        states += 1
+
+                        finishKleen = ''
+                        for l in range(len(AUX[i]) - 1):
+                            finishKleen = str(finishKleen) + AUX[i][l]
+                        AUX[i] = finishKleen
+
+                        fa[0].transitions.append("q" + str(states) + " " + str(AUX[i]) + " q" + str(states + 1))
+                        states += 1
+
+                        fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(h))
+
+            k += 1
+
 # #######################################################
+""" Removendo um nível dos parenteses para repetir os ciclos de União Concatenação e Fecho Kleene """
+def RemoveParenteses(level, ER_COPY):
+    global AUX
+    global ER_AUX
+    global endCondition
+
+    NextRemove = ''
+    
+    NextRemove = ER_COPY
+
+    ER_AUX = []
+
+    for j in range(level):
+        parenteses = 0
+        for i in range(len(NextRemove)):
+            if NextRemove[i] == ')':
+                parenteses -= 1
+                if parenteses == 0:
+                    ER_AUX.append(AUX)
+               
+            if parenteses > 0:
+                AUX = AUX + NextRemove[i]
+            if NextRemove[i] == '(':
+                if parenteses == 0:
+                    AUX = ''
+                parenteses += 1
 
 
+    for i in range(len(ER_AUX)):     
+        k = 0
+        control = len(fa[0].transitions)
+        while k < control:
+            for j in range(states):
+                for h in range(states + 1):
 
+                    if fa[0].transitions[k].find("q" + str(j) + " (" + str(ER_AUX[i]) + ") q" + str(h)) == 0 and h != 1:
+                        del(fa[0].transitions[k])
+                        control -= 1
+                        k -= 1
 
+                        fa[0].transitions.append("q" + str(j) + " " + str(ER_AUX[i]) + " q" + str(h))
 
-
-
-
-
-
-
-
-
-
-
-
+                        endCondition = 0
+            k += 1
 
 ################# - Fluxo Principal - #################
 
 init()
 
+ER_AUX.append(ER)
 
-Union(ER)
-# Concatenation()
-# endCondition = 0            # diz se o programa deve terminar ou não
+AUX_Recover = []
 
-# ER_AUX = []                 # variável que será mandada para a execução do código (será mandado em partes)
-# ER_AUX.append(ER)
-# AUX_Parenteses = []
-# AUX_Recover = []
-
-# level = 0                   # quantidde de parenteses que devem ser tirados
-
-# while endCondition == 0:
-#     endCondition = 1
-#     level = 1              # quantidade de parenteses que devem ser retirados da próxima vez
-
-#     print("ER_AUX main: " + str(ER_AUX))
-
-#     AUX_Recover = ER_AUX
-#     AUX_Parenteses = AUX
-#     print("AUX main: " + str(AUX_Recover))
-
-#     for i in range(len(ER_AUX)):
-#         print("ER_AUX: " + str(ER_AUX))
-#         Union(ER_AUX[i])
-#         print("União: " + str(ER_AUX))      
-#         Concatenation()
-#         print("Concatenação: " + str(ER_AUX))   
-#         FechoKleene()
-#         print("Fecho Kleene: " + str(ER_AUX))  
-#         # AUX_Parenteses.append(ER_AUX[i])
-#         ER_AUX = AUX_Recover
+level = 1              # quantidade de parenteses que devem ser retirados da próxima vez
 
 
-#     AUX = ''
-#     for i in range(len(AUX_Parenteses)):
-#         AUX = AUX + AUX_Parenteses[i]
-#     RemoveParenteses(level, AUX)
+while endCondition == 0:
+    endCondition = 1
+
+    AUX_Recover = ER_AUX
+    
+    for i in range(len(ER_AUX)):
+        Union(ER_AUX[i])
+        Concatenation()
+        FechoKleene()
+        ER_AUX = AUX_Recover
+
+    AUX = ''
+    for i in range(len(AUX_Recover)):
+        AUX = AUX + AUX_Recover[i]
+    RemoveParenteses(level, AUX)
 
 #######################################################
 """ Adicionando no Autômato Finito a quantidade de estados, o estado inicial e o estado final """
