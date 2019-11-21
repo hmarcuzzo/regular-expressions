@@ -147,6 +147,7 @@ def organizaParenteses(tipo):
 
 """ Separo a Expressão Regular em uniões """
 def Union(ER):
+    # declarando as variaveis globais
     global states
     global fa
     global first
@@ -156,7 +157,8 @@ def Union(ER):
     global ER_AUX
 
 
-    if len(ER) > 1:                 # se o tamanho do ER for 1 significa que já está pronto e nada deve ser feito na transação
+    # se o tamanho do ER for 1 significa que já está pronto e nada deve ser feito na transação
+    if len(ER) > 1:                 
         for i in range(len(ER)):     
             k = 0
             control = len(fa[0].transitions)
@@ -180,7 +182,7 @@ def Union(ER):
         
         organizaParenteses('+')
 
-        """ Criando as primeiras transações do que foi separado com a união """
+        """ Criando as transações do que foi separado com a união """
         begin.clear()       # marca o inicio da nova transação
         end.clear()         # marca o fim da nova transação
 
@@ -195,7 +197,86 @@ def Union(ER):
 
             fa[0].transitions.append("q" + str(end[i]) + " " + str(fa[0].lambda_[0]) + " " + "q" + str((last)))
 #######################################################
+""" Criando as transações para as Concatenações """
+def Concatenation():
+    global states
+    global begin
+    global end
+    global ER_AUX
 
+    begin2 = []
+    end2 = []
+
+    for i in range(len(ER_AUX)):
+        flag = 0
+
+        if len(ER_AUX[i]) > 2:
+            AUX = ER_AUX[i]
+            AUX = AUX.split('.')
+
+            """ É checado se nas separações de concatenação existem algum parenteses, se houver é marcado o começo e o fim, 
+                    e é setado a flag dizendo que existe """
+            parenteses = 0
+
+            for i in range(len(AUX)):
+                for j in range(len(AUX[i])):
+                    if AUX[i][j] == ')':
+                        parenteses -= 1
+
+                        if parenteses == 0:
+                            end2.append(i)
+                    if AUX[i][j] == '(':
+                        if parenteses == 0:
+                            begin2.append(i)
+                        parenteses += 1
+                        flag = 1
+
+            """ Se existe parenteses nas separações, é feito a junção novamente com a concatenação """
+            if flag == 1:
+                for i in range(len(begin2)):
+                    for j in range(begin2[i], end2[i]):
+                        if j != end2[i]:
+                            AUX[begin2[i]] = str(AUX[begin2[i]]) + "." + str(AUX[j + 1])
+
+                for i in range(len(begin2)):
+                    j = begin2[i]
+                    while j < end2[i]:
+                        end2[i] = end2[i] - 1
+                        if i < (len(begin2) - 1):
+                            begin2[i + 1] = begin2[i + 1] - 1
+                            end2[i + 1] = end2[i + 1] - 1
+                        
+                        del(AUX[j + 1])
+                        j -= 1
+                        j += 1
+
+            print("AUX Contatenation: " + str(AUX))
+
+            k = 0
+            control = len(fa[0].transitions)
+            while k < control:
+                if fa[0].transitions[k].find("q" + str(begin[i]) + " " + str(ER_AUX[i]) + " q" + str(end[i])) == 0:
+                    del(fa[0].transitions[k])
+                    control -= 1
+                    k -= 1
+
+                    for h in range(len(AUX)):
+                        fa[0].transitions.append("q" + str(begin[i]) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
+                        states += 1
+
+
+                        fa[0].transitions.append("q" + str(states) + " " + str(AUX[h]) + " q" + str(states + 1))
+                        states += 1
+
+                        if h == len(AUX) - 1:
+                            fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(end[i]))
+                        else:
+                            fa[0].transitions.append("q" + str(states) + " " + str(fa[0].lambda_[0]) + " q" + str(states + 1))
+                            states += 1
+                            begin[i] = states
+                k += 1
+
+# #######################################################
 
 
 
