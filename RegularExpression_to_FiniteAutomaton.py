@@ -1,3 +1,31 @@
+"""*******************************************************************
+* NOME DO ARQUIVO :    RegularExpression_to_FiniteAutomaton.py       *
+*                                                                    *
+* DESCRIÇÂO :                                                        *
+*                                                                    *
+*        Este trabalho conciste em transformar uma expressão regular *
+*           em um automato finito, para isso todas as operações de   *
+*           União, Concatenação e Fecho de Kleene são feitas, nesta  *
+*           ordem, nos operadores que se encontram fora de           *
+*           parenteses.                                              *
+*       Ao final deste ciclo, tenta-se retirar um ciclo de           *
+*           parenteses, se ocorrer com sucesso, ou se seja haviam    *
+*           parenteses para ser retirado, o ciclo de União,          * 
+*           Concatenação e Fecho de Kleene se repetem até que não    *
+*           existam mais parenteses para serem retirados.            *
+*                                                                    *
+*                                                                    *
+*                                                                    *
+*                                                                    *
+* AUTORES :    Enzo Italiano, Henrique Marcuzzo e Matheus Batistela  *
+*                                                                    *
+* DATA DE CRIAÇÃO :    15/10/2019                                    *   
+*                                                                    *
+* MODIFICAÇÕES :       21/10/2019                                    *
+*                                                                    * 
+**********************************************************************"""
+
+
 import sys
 import subprocess
 
